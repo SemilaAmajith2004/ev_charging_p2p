@@ -28,7 +28,7 @@ class _BookingScreenState extends State<BookingScreen> {
   double liveBikeBatteryPercentage = 0.45;
   bool _hasAlertedFullCharge = false;
 
-  // Book වූ සියලුම Slots තබා ගන්නා List එක (Default ලෙස එකක් Booked කර ඇත)
+  // Book වූ සියලුම Slots තබා ගන්නා List එක
   final List<String> bookedSlots = ['09:00 AM - 10:00 AM'];
 
   // Book කළ Slot වල Message History
@@ -43,7 +43,7 @@ class _BookingScreenState extends State<BookingScreen> {
   StreamSubscription? _batterySub;
   StreamSubscription? _stateSub;
 
-  final List<String> timeSlots = [
+  final List<String> timeSlots = const [
     '08:00 AM - 09:00 AM',
     '09:00 AM - 10:00 AM',
     '10:00 AM - 11:00 AM',
@@ -64,6 +64,7 @@ class _BookingScreenState extends State<BookingScreen> {
           const SnackBar(
             content: Text('E-Bike Connected Successfully! Receiving battery data...'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -96,6 +97,8 @@ class _BookingScreenState extends State<BookingScreen> {
   }
 
   void _triggerFullChargeAlert() {
+    if (!mounted) return;
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -107,9 +110,11 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               Icon(Icons.battery_charging_full, color: AppColors.neonGreen, size: 30),
               SizedBox(width: 10),
-              Text(
-                'Battery Fully Charged!',
-                style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+              Expanded(
+                child: Text(
+                  'Battery Fully Charged!',
+                  style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
+                ),
               ),
             ],
           ),
@@ -118,7 +123,7 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               Text(
                 '🔔 BEEP! BEEP! BEEP!\nYour E-Bike is now 100% charged. Please unplug to avoid overcharging.',
-                style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontSize: 14),
+                style: TextStyle(color: Colors.white, fontSize: 14),
               ),
             ],
           ),
@@ -148,11 +153,14 @@ class _BookingScreenState extends State<BookingScreen> {
       return;
     }
 
+    final String currentTimeFormatted = TimeOfDay.now().format(context);
+
     showDialog(
       context: context,
-      builder: (context) {
+      builder: (dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text(
             'Confirm Slot Booking',
             style: TextStyle(
@@ -194,7 +202,7 @@ class _BookingScreenState extends State<BookingScreen> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text(
                 'Cancel',
                 style: TextStyle(color: AppColors.textSecondary),
@@ -206,23 +214,27 @@ class _BookingScreenState extends State<BookingScreen> {
                 foregroundColor: AppColors.background,
               ),
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
 
                 setState(() {
-                  // Booked List එකට එක් කිරීම (Slot එක Disable කිරීමට)
                   bookedSlots.add(selectedSlot);
-
-                  // Message List එකට එක් කිරීම
                   _bookedMessages.insert(0, {
                     'slot': selectedSlot,
                     'station': widget.stationTitle,
-                    'time': TimeOfDay.now().format(context),
+                    'time': currentTimeFormatted,
                   });
+
+                  // Automatically switch selectedSlot to next available slot if possible
+                  final availableSlots = timeSlots.where((s) => !bookedSlots.contains(s)).toList();
+                  if (availableSlots.isNotEmpty) {
+                    selectedSlot = availableSlots.first;
+                  }
                 });
 
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('Slot $selectedSlot booked successfully!'),
+                    content: Text('Slot booked successfully!'),
                     backgroundColor: AppColors.neonGreen,
                   ),
                 );
@@ -238,6 +250,7 @@ class _BookingScreenState extends State<BookingScreen> {
   @override
   Widget build(BuildContext context) {
     final bool isBikeConnected = _bleState == BleConnectionState.connected;
+    final bool isSelectedSlotBooked = bookedSlots.contains(selectedSlot);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -253,7 +266,6 @@ class _BookingScreenState extends State<BookingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Scrollable Content
             Expanded(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
@@ -320,7 +332,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                     const SizedBox(height: 20),
 
-                    // --- E-BIKE CONNECT STATUS CARD ---
+                    // E-Bike Bluetooth Status Card
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -377,7 +389,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                     const SizedBox(height: 15),
 
-                    // --- BATTERY DISPLAY CONDITION ---
+                    // Battery Display Logic
                     if (isBikeConnected)
                       LiquidBatteryWidget(percentage: liveBikeBatteryPercentage)
                     else
@@ -423,7 +435,7 @@ class _BookingScreenState extends State<BookingScreen> {
                     ),
                     const SizedBox(height: 12),
 
-                    // --- SLOT SELECTOR WITH BOOKED/DISABLED STATE ---
+                    // Time Slots Selection List
                     SizedBox(
                       height: 55,
                       child: ListView.builder(
@@ -436,12 +448,8 @@ class _BookingScreenState extends State<BookingScreen> {
 
                           return GestureDetector(
                             onTap: isAlreadyBooked
-                                ? null // Touch කළ නොහැක
-                                : () {
-                                    setState(() {
-                                      selectedSlot = slot;
-                                    });
-                                  },
+                                ? null
+                                : () => setState(() => selectedSlot = slot),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 200),
                               margin: const EdgeInsets.only(right: 10),
@@ -495,7 +503,7 @@ class _BookingScreenState extends State<BookingScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ]
+                                  ],
                                 ],
                               ),
                             ),
@@ -506,7 +514,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
                     const SizedBox(height: 25),
 
-                    // --- BOOKING MESSAGES / NOTIFICATIONS ---
+                    // Booking Messages History
                     if (_bookedMessages.isNotEmpty) ...[
                       const Text(
                         'Booking Notifications / Messages',
@@ -535,8 +543,11 @@ class _BookingScreenState extends State<BookingScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.check_circle,
-                                    color: AppColors.neonGreen, size: 28),
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: AppColors.neonGreen,
+                                  size: 28,
+                                ),
                                 const SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
@@ -572,7 +583,7 @@ class _BookingScreenState extends State<BookingScreen> {
               ),
             ),
 
-            // --- BOTTOM FIXED BOOKING BUTTON ---
+            // Fixed Bottom Booking Button
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -590,7 +601,7 @@ class _BookingScreenState extends State<BookingScreen> {
                 height: 50,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: bookedSlots.contains(selectedSlot)
+                    backgroundColor: isSelectedSlotBooked
                         ? Colors.grey
                         : AppColors.neonGreen,
                     foregroundColor: AppColors.background,
@@ -598,11 +609,9 @@ class _BookingScreenState extends State<BookingScreen> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
-                  onPressed: bookedSlots.contains(selectedSlot)
-                      ? null // Selected slot එකත් booked නම් button එක disable වේ
-                      : _showPaymentDialog,
+                  onPressed: isSelectedSlotBooked ? null : _showPaymentDialog,
                   child: Text(
-                    bookedSlots.contains(selectedSlot)
+                    isSelectedSlotBooked
                         ? 'Slot Already Booked'
                         : 'Book Slot ($selectedSlot)',
                     style: const TextStyle(

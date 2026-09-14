@@ -27,6 +27,8 @@ class EVStationModel {
     this.rating = 5.0,
   });
 
+  String get rate => 'Rs. ${pricePerKwh.toStringAsFixed(0)} / kWh';
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
