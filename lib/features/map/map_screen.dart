@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../core/theme/app_color.dart';
@@ -34,6 +35,11 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
 
+  // User current location tracking
+  LatLng? _currentLocation;
+  bool _isLoadingLocation = true;
+  StreamSubscription<Position>? _locationSubscription;
+
   // Booked Time Slot details (Station ID -> Selected DateTime)
   final Map<String, DateTime> _bookedSlots = {};
 
@@ -54,36 +60,124 @@ class _MapScreenState extends State<MapScreen> {
     ),
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserLocation();
+  }
+
+  @override
+  void dispose() {
+    _locationSubscription?.cancel();
+    _mapController.dispose();
+    super.dispose();
+  }
+
+  // Location Permissions handle කිරීම සහ Current Location එක ලබාගැනීම
+  Future<void> _fetchUserLocation() async {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        setState(() => _isLoadingLocation = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please enable device location services.'),
+            backgroundColor: AppColors.solarAmber,
+          ),
+        );
+      }
+      return;
+    }
+
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) setState(() => _isLoadingLocation = false);
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) setState(() => _isLoadingLocation = false);
+      return;
+    }
+
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+      );
+
+      _updateCurrentLocation(position);
+      _startLiveLocationTracking();
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  void _updateCurrentLocation(Position position) {
+    if (!mounted) return;
+
+    final nextLocation = LatLng(position.latitude, position.longitude);
+    setState(() {
+      _currentLocation = nextLocation;
+      _isLoadingLocation = false;
+    });
+
+    _mapController.move(nextLocation, 14.0);
+  }
+
+  void _startLiveLocationTracking() {
+    _locationSubscription?.cancel();
+
+    _locationSubscription = Geolocator.getPositionStream(
+      locationSettings: const LocationSettings(
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 10,
+      ),
+    ).listen(
+      (position) {
+        if (!mounted) return;
+        _updateCurrentLocation(position);
+      },
+      onError: (error) {
+        debugPrint('Location stream error: $error');
+      },
+    );
+  }
+
   // Navigate to Booking Screen and handle returned DateTime
-  void _openBookingScreen(EVStation station) async {
+  Future<void> _openBookingScreen(EVStation station) async {
     final selectedTime = await Navigator.push<DateTime>(
       context,
       MaterialPageRoute(
-        builder: (context) =>
-            BookingScreen(stationTitle: station.title, rate: station.price),
+        builder: (context) => BookingScreen(
+          stationTitle: station.title,
+          rate: station.price,
+        ),
       ),
     );
 
-    if (!mounted) return;
+    if (!mounted || selectedTime == null) return;
 
-    if (selectedTime != null) {
-      setState(() {
-        _bookedSlots[station.id] = selectedTime;
-      });
+    setState(() {
+      _bookedSlots[station.id] = selectedTime;
+    });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            'Slot Booked for ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}!',
-          ),
-          backgroundColor: AppColors.neonGreen,
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Slot Booked for ${selectedTime.hour.toString().padLeft(2, '0')}:${selectedTime.minute.toString().padLeft(2, '0')}!',
         ),
-      );
-    }
+        backgroundColor: AppColors.neonGreen,
+      ),
+    );
   }
 
   // Real-time Station Bottom Sheet using StatefulBuilder & Timer
   void _showStationStatusBottomSheet(EVStation station) {
+    Timer? timer;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -91,11 +185,8 @@ class _MapScreenState extends State<MapScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) {
-        Timer? timer;
-
         return StatefulBuilder(
           builder: (context, setSheetState) {
-            // Periodic timer to recalculate arrival status every second
             timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
               if (sheetContext.mounted) {
                 setSheetState(() {});
@@ -108,11 +199,11 @@ class _MapScreenState extends State<MapScreen> {
             bool isTimeArrived = false;
             if (isBooked) {
               final now = DateTime.now();
-              isTimeArrived =
-                  now.isAfter(bookedTime) || now.isAtSameMomentAs(bookedTime);
+              isTimeArrived = now.isAfter(bookedTime) || now.isAtSameMomentAs(bookedTime);
             }
 
             return PopScope(
+              canPop: true,
               onPopInvokedWithResult: (didPop, result) {
                 timer?.cancel();
               },
@@ -206,8 +297,8 @@ class _MapScreenState extends State<MapScreen> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isBooked
                               ? (isTimeArrived
-                                    ? AppColors.neonGreen
-                                    : Colors.grey)
+                                  ? AppColors.neonGreen
+                                  : Colors.grey)
                               : AppColors.neonGreen,
                           foregroundColor: AppColors.background,
                           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -259,8 +350,7 @@ class _MapScreenState extends State<MapScreen> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    onPressed: () =>
-                                        Navigator.pop(dialogContext),
+                                    onPressed: () => Navigator.pop(dialogContext),
                                     child: const Text(
                                       'OK',
                                       style: TextStyle(
@@ -286,8 +376,8 @@ class _MapScreenState extends State<MapScreen> {
                           !isBooked
                               ? 'Go to Booking Window'
                               : (isTimeArrived
-                                    ? 'Arrived'
-                                    : 'Waiting for Time Slot'),
+                                  ? 'Arrived'
+                                  : 'Waiting for Time Slot'),
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -302,7 +392,9 @@ class _MapScreenState extends State<MapScreen> {
           },
         );
       },
-    );
+    ).whenComplete(() {
+      timer?.cancel();
+    });
   }
 
   Marker _buildStationMarker(EVStation station) {
@@ -335,9 +427,8 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color:
-                        (isBooked ? AppColors.solarAmber : AppColors.neonGreen)
-                            .withValues(alpha: 0.4),
+                    color: (isBooked ? AppColors.solarAmber : AppColors.neonGreen)
+                        .withValues(alpha: 0.4),
                     blurRadius: 8,
                     spreadRadius: 1,
                   ),
@@ -360,9 +451,41 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
+  // User Current Location Marker එක නිර්මාණය කිරීම
+  Marker _buildUserLocationMarker() {
+    return Marker(
+      point: _currentLocation!,
+      width: 40,
+      height: 40,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.3),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Container(
+            width: 18,
+            height: 18,
+            decoration: BoxDecoration(
+              color: Colors.blue,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 3),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const LatLng defaultCenter = LatLng(6.9271, 79.8612);
+
+    // Dynamic Markers List (Stations + Current User Location)
+    final List<Marker> allMarkers = _stations.map(_buildStationMarker).toList();
+    if (_currentLocation != null) {
+      allMarkers.add(_buildUserLocationMarker());
+    }
 
     return Scaffold(
       body: SafeArea(
@@ -376,14 +499,12 @@ class _MapScreenState extends State<MapScreen> {
               ),
               children: [
                 TileLayer(
-                  urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  urlTemplate:
+                      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  subdomains: const ['a', 'b', 'c'],
                   userAgentPackageName: 'com.example.ev_charging_p2p',
-                  // Some environments block OSM requests; this keyless fallback is the
-                  // simplest option without requiring a third-party API key.
                 ),
-                MarkerLayer(
-                  markers: _stations.map(_buildStationMarker).toList(),
-                ),
+                MarkerLayer(markers: allMarkers),
               ],
             ),
             const Positioned(
@@ -397,12 +518,8 @@ class _MapScreenState extends State<MapScreen> {
               top: 100,
               child: FloatingActionButton(
                 mini: true,
-                backgroundColor: const Color.fromARGB(
-                  255,
-                  254,
-                  255,
-                  255,
-                ).withValues(alpha: 0.9),
+                backgroundColor: const Color.fromARGB(255, 255, 254, 255)
+                    .withValues(alpha: 0.9),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(100),
                   side: const BorderSide(
@@ -412,7 +529,11 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 onPressed: () {
                   _mapController.rotate(0.0);
-                  _mapController.move(_mapController.camera.center, 15.0);
+                  if (_currentLocation != null) {
+                    _mapController.move(_currentLocation!, 15.0);
+                  } else {
+                    _mapController.move(_mapController.camera.center, 15.0);
+                  }
                 },
                 child: const Icon(
                   Icons.navigation_rounded,
@@ -420,6 +541,28 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
             ),
+            if (_isLoadingLocation)
+              const Positioned(
+                bottom: 20,
+                left: 20,
+                child: Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                        SizedBox(width: 8),
+                        Text('Fetching location...'),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
