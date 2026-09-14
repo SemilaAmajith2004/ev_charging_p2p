@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_color.dart';
+import '../../screens/wallet_screen.dart';
 import '../map/map_screen.dart';
 import '../bookings/bookings_screen.dart';
 import '../profile/profile_screen.dart';
@@ -22,12 +23,7 @@ class _MainScreenState extends State<MainScreen> {
       stationTitle: 'Solar Point Charging Hub',
       rate: 'Rs. 28.00 / kWh',
     ),
-    const Center(
-      child: Text(
-        'Wallet Screen',
-        style: TextStyle(color: AppColors.textPrimary, fontSize: 18),
-      ),
-    ),
+    const WalletScreen(),
     const ProfileScreen(), // Profile Screen එක direct ලෙස එකතු කර ඇත
   ];
 
