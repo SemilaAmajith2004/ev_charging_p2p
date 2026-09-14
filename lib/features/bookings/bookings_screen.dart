@@ -118,7 +118,7 @@ class _BookingScreenState extends State<BookingScreen> {
             children: [
               Text(
                 '🔔 BEEP! BEEP! BEEP!\nYour E-Bike is now 100% charged. Please unplug to avoid overcharging.',
-                style: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+                style: TextStyle(color: Color.fromARGB(255, 255, 255, 255), fontSize: 14),
               ),
             ],
           ),
