@@ -79,7 +79,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           content: const Text(
             'Please enable location services so your live position can appear on the map.',
-            style: TextStyle(color: AppColors.textSecondary),
+            style: TextStyle(color: Color.fromARGB(255, 255, 253, 253)),
           ),
           actions: [
             TextButton(
@@ -113,10 +113,16 @@ class _MapScreenState extends State<MapScreen> {
   }
 
   Future<void> _fetchUserLocation() async {
+    const defaultLocation = LatLng(6.9271, 79.8612);
+
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       if (mounted) {
-        setState(() => _isLoadingLocation = false);
+        setState(() {
+          _currentLocation = defaultLocation;
+          _isLoadingLocation = false;
+        });
+        _mapController.move(defaultLocation, 11.0);
         _showLocationSettingsDialog();
       }
       return;
@@ -126,14 +132,24 @@ class _MapScreenState extends State<MapScreen> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        if (mounted) setState(() => _isLoadingLocation = false);
+        if (mounted) {
+          setState(() {
+            _currentLocation = defaultLocation;
+            _isLoadingLocation = false;
+          });
+          _mapController.move(defaultLocation, 11.0);
+        }
         return;
       }
     }
 
     if (permission == LocationPermission.deniedForever) {
       if (mounted) {
-        setState(() => _isLoadingLocation = false);
+        setState(() {
+          _currentLocation = defaultLocation;
+          _isLoadingLocation = false;
+        });
+        _mapController.move(defaultLocation, 11.0);
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             showDialog(
@@ -146,7 +162,7 @@ class _MapScreenState extends State<MapScreen> {
                 ),
                 content: const Text(
                   'Please allow location access in app settings to show your live map position.',
-                  style: TextStyle(color: AppColors.textSecondary),
+                  style: TextStyle(color: Color.fromARGB(255, 253, 252, 252)),
                 ),
                 actions: [
                   TextButton(
@@ -177,7 +193,13 @@ class _MapScreenState extends State<MapScreen> {
       final position = await Geolocator.getCurrentPosition();
       _updateCurrentLocation(position);
     } catch (_) {
-      if (mounted) setState(() => _isLoadingLocation = false);
+      if (mounted) {
+        setState(() {
+          _currentLocation = const LatLng(6.9271, 79.8612);
+          _isLoadingLocation = false;
+        });
+        _mapController.move(const LatLng(6.9271, 79.8612), 11.0);
+      }
     }
   }
 
@@ -259,7 +281,7 @@ class _MapScreenState extends State<MapScreen> {
                 children: [
                   const Icon(
                     Icons.location_on_outlined,
-                    color: AppColors.textSecondary,
+                    color: Color.fromARGB(255, 255, 255, 255),
                     size: 16,
                   ),
                   const SizedBox(width: 4),
@@ -267,7 +289,7 @@ class _MapScreenState extends State<MapScreen> {
                     child: Text(
                       station.address,
                       style: const TextStyle(
-                        color: AppColors.textSecondary,
+                        color: Color.fromARGB(255, 255, 255, 255),
                         fontSize: 13,
                       ),
                     ),
@@ -304,7 +326,7 @@ class _MapScreenState extends State<MapScreen> {
                       const Text(
                         'Connectors',
                         style: TextStyle(
-                          color: AppColors.textSecondary,
+                          color: Color.fromARGB(255, 255, 255, 255),
                           fontSize: 12,
                         ),
                       ),

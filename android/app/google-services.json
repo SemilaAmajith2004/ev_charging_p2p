@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "250926958531",
+    "project_id": "ev-charging-p2p",
+    "storage_bucket": "ev-charging-p2p.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:250926958531:android:c7929a7a7cf00bf668df76",
+        "android_client_info": {
+          "package_name": "com.example.ev_charging_p2p"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "250926958531-q2k72drsicehcs98fe905vkkd73dbrja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ev_charging_p2p",
+            "certificate_hash": "0eb03ca2e3808bbfa1c4d9ef5c4ff0891549e085"
+          }
+        },
+        {
+          "client_id": "250926958531-8vgdum7sn487k9lr43sa88ardn7trchn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXMSQ3eV83SPpPkux-nGcVxhfGdM6VgEo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "250926958531-8vgdum7sn487k9lr43sa88ardn7trchn.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "250926958531-bomgl5p3o9v1dlg1j5mt9s3s4umnugi5.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.evChargingP2p"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../core/theme/app_color.dart';
 import '../main_layout.dart';
 
@@ -45,10 +46,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               const SizedBox(height: 8),
               const Text(
                 'Select how you want to continue today:',
-                style: TextStyle(
-                  color: AppColors.textSecondary,
-                  fontSize: 16,
-                ),
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 16),
               ),
               const SizedBox(height: 40),
 
@@ -56,7 +54,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 role: UserRole.driver,
                 title: 'EV Driver / User',
-                subtitle: 'Find, book, and charge at nearby community EV stations.',
+                subtitle:
+                    'Find, book, and charge at nearby community EV stations.',
                 icon: Icons.electric_car,
               ),
 
@@ -66,7 +65,8 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 role: UserRole.host,
                 title: 'Station Host',
-                subtitle: 'List your private charger, manage slots, and earn income.',
+                subtitle:
+                    'List your private charger, manage slots, and earn income.',
                 icon: Icons.ev_station,
               ),
 
@@ -87,10 +87,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   onPressed: _navigateToMainLayout,
                   child: const Text(
                     'Continue',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -125,7 +122,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   BoxShadow(
                     color: AppColors.neonGreen.withValues(alpha: 0.2),
                     blurRadius: 10,
-                  )
+                  ),
                 ]
               : [],
         ),
@@ -134,16 +131,12 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isSelected
-                    ? AppColors.neonGreen
-                    : AppColors.background,
+                color: isSelected ? AppColors.neonGreen : AppColors.background,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 icon,
-                color: isSelected
-                    ? AppColors.background
-                    : AppColors.neonGreen,
+                color: isSelected ? AppColors.background : AppColors.neonGreen,
                 size: 28,
               ),
             ),
@@ -171,13 +164,12 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 ],
               ),
             ),
-            Radio<UserRole>(
-              value: role,
-              groupValue: _selectedRole,
-              activeColor: AppColors.neonGreen,
-              onChanged: (value) {
-                if (value != null) setState(() => _selectedRole = value);
-              },
+            Icon(
+              isSelected
+                  ? Icons.radio_button_checked
+                  : Icons.radio_button_unchecked,
+              color: AppColors.neonGreen,
+              size: 22,
             ),
           ],
         ),
