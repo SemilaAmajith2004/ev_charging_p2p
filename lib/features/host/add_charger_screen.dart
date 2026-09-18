@@ -2,10 +2,12 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../core/theme/app_color.dart';
+import '../../firebase_options.dart';
 
 class AddChargerScreen extends StatefulWidget {
   const AddChargerScreen({super.key, this.charger})
@@ -175,13 +177,45 @@ class _AddChargerScreenState extends State<AddChargerScreen> {
       return;
     }
 
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp(
+          options: DefaultFirebaseOptions.currentPlatform,
+        );
+      }
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Firebase is not ready. Please ensure the app is configured correctly.\n$error',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    if (Firebase.apps.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Firebase is not initialized for host mode.'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
     setState(() => _isSaving = true);
 
     try {
-      final docRef = FirebaseFirestore.instance.collection('stations').doc();
+      final firestore = FirebaseFirestore.instance;
+      final hostUserId = FirebaseAuth.instance.currentUser?.uid ?? 'guest-host';
+      final docRef = firestore.collection('stations').doc();
       final payload = {
         'id': docRef.id,
-        'hostId': FirebaseAuth.instance.currentUser?.uid ?? 'guest-host',
+        'hostId': hostUserId,
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
         'address': _addressController.text.trim(),

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_color.dart';
@@ -22,7 +23,7 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth? _auth;
   late UserRole _selectedRole;
 
   String _userName = 'Semila Amajith';
@@ -35,6 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    _auth = Firebase.apps.isNotEmpty ? FirebaseAuth.instance : null;
     _selectedRole = widget.initialRole;
     _syncUserProfile();
   }
@@ -42,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool get _isHost => _selectedRole == UserRole.host;
 
   void _syncUserProfile() {
-    final user = _auth.currentUser;
+    final user = _auth?.currentUser;
     if (user == null) return;
 
     setState(() {
@@ -95,7 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _changePassword() async {
-    final user = _auth.currentUser;
+    final user = _auth?.currentUser;
     if (user == null || user.email == null) {
       _showMessage(
         'No active user found. Please sign in again.',
@@ -232,7 +234,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final navigator = Navigator.of(context);
     setState(() => _isLoading = true);
     try {
-      await _auth.signOut();
+      if (_auth == null) {
+        if (!mounted) return;
+        navigator.pushAndRemoveUntil(
+          MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+          (route) => false,
+        );
+        return;
+      }
+
+      await _auth!.signOut();
       if (!mounted) return;
       navigator.pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
