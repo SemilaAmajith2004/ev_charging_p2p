@@ -111,15 +111,14 @@ Voltnode addresses this with a **decentralized peer-to-peer charging network**:
 
 ## 📸 Screenshots
 
-> Add screenshots or a demo GIF to `docs/images/` and update the table below. Projects with visuals get noticeably more engagement.
 
-| Discovery Map | Station Details | Slot Booking |
+| Discovery Map | Station Details | Slot Booking | search filter |
 |:---:|:---:|:---:|
-| ![Map](docs/images/map.png) | ![Station](docs/images/station.png) | ![Booking](docs/images/booking.png) |
+| ![Map](assets/images/map.jpg) | ![Station](assets/images/station.jpg) | ![Booking](assets/images/booking.jpg) | ![filtering](assets/images/filter.jpg) |
 
-| Live Charging | Host Dashboard | Profile / Role Switch |
+| Live Charging | Host Dashboard | Profile / Role Switch | create time slot |
 |:---:|:---:|:---:|
-| ![Charging](docs/images/charging.png) | ![Host](docs/images/host.png) | ![Profile](docs/images/profile.png) |
+| ![Charging](assets/images/charging.jpg) | ![Host](assets/images/host.jpg) | ![Profile](assets/images/profile.jpg) | ![create](assets/images/time.jpg) |
 
 ---
 
