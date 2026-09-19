@@ -113,11 +113,11 @@ Voltnode addresses this with a **decentralized peer-to-peer charging network**:
 
 | Discovery Map | Station Details | Slot Booking | Search Filter |
 | :---: | :---: | :---: | :---: |
-| ![Map](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/map.jpg) | ![Station](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/station.jpg) | ![Booking](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/booking.jpg) | ![Filtering](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/filter.jpg) |
+| <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/map.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/station.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/booking.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/filter.jpg" width="200"/> |
 
 | Live Charging | Host Dashboard | Profile / Role Switch | Create Time Slot |
 | :---: | :---: | :---: | :---: |
-| ![Charging](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/charging.jpg) | ![Host](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/host.jpg) | ![Profile](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/profile.jpg) | ![Create](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/time.jpg) |
+| <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/charging.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/host.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/profile.jpg" width="200"/> | <img src="https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/time.jpg" width="200"/> |
 
 ---
 
