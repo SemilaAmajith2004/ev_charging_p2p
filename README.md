@@ -111,14 +111,13 @@ Voltnode addresses this with a **decentralized peer-to-peer charging network**:
 
 ## 📸 Screenshots
 
+| Discovery Map | Station Details | Slot Booking | Search Filter |
+| :---: | :---: | :---: | :---: |
+| ![Map](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/map.jpg) | ![Station](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/station.jpg) | ![Booking](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/booking.jpg) | ![Filtering](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/filter.jpg) |
 
-| Discovery Map | Station Details | Slot Booking | search filter |
-|:---:|:---:|:---:|
-| ![Map](assets/images/map.jpg) | ![Station](assets/images/station.jpg) | ![Booking](assets/images/booking.jpg) | ![filtering](assets/images/filter.jpg) |
-
-| Live Charging | Host Dashboard | Profile / Role Switch | create time slot |
-|:---:|:---:|:---:|
-| ![Charging](assets/images/charging.jpg) | ![Host](assets/images/host.jpg) | ![Profile](assets/images/profile.jpg) | ![create](assets/images/time.jpg) |
+| Live Charging | Host Dashboard | Profile / Role Switch | Create Time Slot |
+| :---: | :---: | :---: | :---: |
+| ![Charging](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/charging.jpg) | ![Host](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/host.jpg) | ![Profile](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/profile.jpg) | ![Create](https://raw.githubusercontent.com/SemilaAmajith2004/ev_charging_p2p/main/assets/images/time.jpg) |
 
 ---
 
